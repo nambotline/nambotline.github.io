@@ -1,69 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-    <title>LIFF Share Example</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIFF Login & Access Token</title>
     <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
             text-align: center;
+            padding: 50px;
         }
 
-        .container {
-            width: 80%;
-            margin: auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        #accessToken {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 14px;
+            white-space: pre-wrap;
         }
 
-        h1 {
-            color: #4CAF50;
-        }
-
-        .friend-list {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .friend-list li {
+        #loginButton {
             background-color: #4CAF50;
             color: white;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            text-align: left;
-            font-size: 18px;
-        }
-
-        #shareButton {
-            background-color: #008CBA;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 18px;
+            padding: 15px 32px;
+            text-align: center;
+            font-size: 16px;
             cursor: pointer;
+            border: none;
             border-radius: 5px;
             margin-top: 20px;
         }
 
-        #shareButton:hover {
-            background-color: #007B9A;
+        #loginButton:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>รายชื่อเพื่อนใน LINE</h1>
-        <ul id="friendList" class="friend-list">
-            <!-- รายชื่อเพื่อนจะถูกแสดงที่นี่ -->
-        </ul>
-        <button id="shareButton">แชร์ข้อความ</button>
-    </div>
+    <h1>เข้าสู่ระบบด้วย LINE และดึง Access Token</h1>
+    <button id="loginButton">ล็อกอินด้วย LINE</button>
+    <pre id="accessToken">Access Token จะแสดงที่นี่หลังจากล็อกอินสำเร็จ</pre>
 
     <script>
         async function main() {
@@ -76,39 +55,17 @@
                 return;
             }
 
-            // เช็คว่าเป็นเพื่อนใน LINE หรือไม่
-            const isFriend = await liff.getFriendship();
-
-            if (isFriend.friendFlag) {
-                // แสดงรายชื่อเพื่อนใน LINE
-                const friendList = document.getElementById("friendList");
-
-                try {
-                    const profile = await liff.getProfile();
-                    const friendItem = document.createElement("li");
-                    friendItem.textContent = profile.displayName;
-                    friendList.appendChild(friendItem);
-                } catch (error) {
-                    console.error("ไม่สามารถดึงข้อมูลโปรไฟล์ได้:", error);
-                }
+            // ตรวจสอบสถานะการล็อกอิน
+            if (!liff.isLoggedIn()) {
+                // ถ้ายังไม่ได้ล็อกอิน, ให้กดปุ่มล็อกอิน
+                document.getElementById("loginButton").addEventListener("click", () => {
+                    liff.login(); // เรียกใช้ login
+                });
             } else {
-                alert("คุณยังไม่ได้เป็นเพื่อนกับผู้ใช้นี้");
+                // ถ้าล็อกอินแล้ว, ดึง Access Token
+                const accessToken = liff.getAccessToken();
+                document.getElementById("accessToken").textContent = accessToken ? accessToken : "ไม่สามารถดึง access token ได้";
             }
-
-            // ตั้งค่าปุ่มแชร์ข้อความ
-            document.getElementById("shareButton").addEventListener("click", async () => {
-                try {
-                    await liff.shareTargetPicker([
-                        {
-                            type: "text", // ประเภทของข้อความ
-                            text: "สวัสดี! นี่คือข้อความที่แชร์จาก LIFF" // เนื้อหาที่ต้องการแชร์
-                        }
-                    ]);
-                    alert("แชร์ข้อความสำเร็จ!");
-                } catch (error) {
-                    console.error("การแชร์ข้อความล้มเหลว:", error);
-                }
-            });
         }
 
         // เรียกใช้ฟังก์ชันหลัก
