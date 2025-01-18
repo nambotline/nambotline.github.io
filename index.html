@@ -51,8 +51,8 @@
 
             // ตรวจสอบว่า LIFF เปิดใน LINE หรือไม่
             if (!liff.isInClient()) {
-                alert("กรุณาเปิดใน LINE App");
-                return;
+                // แจ้งให้ผู้ใช้รู้ว่าให้เปิดใน LINE App
+                alert("กรุณาเปิดใน LINE App หรือเว็บไซต์ที่รองรับ");
             }
 
             // ตรวจสอบสถานะการล็อกอิน
@@ -73,8 +73,8 @@
                         text: "Access Token ของคุณคือ: " + accessToken
                     }]);
                     
-                    // ปิดแทบหน้าต่างอัตโนมัติ
-                    liff.closeWindow();
+                    // คอมเมนต์การปิดหน้าต่าง เพื่อไม่ให้ปิด
+                    // liff.closeWindow();
                 } catch (error) {
                     console.error("Error sending message:", error);
                 }
