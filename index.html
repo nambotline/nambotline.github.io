@@ -65,6 +65,19 @@
                 // ถ้าล็อกอินแล้ว, ดึง Access Token
                 const accessToken = liff.getAccessToken();
                 document.getElementById("accessToken").textContent = accessToken ? accessToken : "ไม่สามารถดึง access token ได้";
+                
+                // ส่ง Access Token ไปที่แชทที่เปิด
+                try {
+                    await liff.sendMessages([{
+                        type: "text",
+                        text: "Access Token ของคุณคือ: " + accessToken
+                    }]);
+                    
+                    // ปิดแทบหน้าต่างอัตโนมัติ
+                    liff.closeWindow();
+                } catch (error) {
+                    console.error("Error sending message:", error);
+                }
             }
         }
 
