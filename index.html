@@ -3,9 +3,68 @@
 <head>
     <title>LIFF Share Example</title>
     <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #4CAF50;
+        }
+
+        .friend-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .friend-list li {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            text-align: left;
+            font-size: 18px;
+        }
+
+        #shareButton {
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        #shareButton:hover {
+            background-color: #007B9A;
+        }
+    </style>
 </head>
 <body>
-    <button id="shareButton">แชร์ข้อความ</button>
+    <div class="container">
+        <h1>รายชื่อเพื่อนใน LINE</h1>
+        <ul id="friendList" class="friend-list">
+            <!-- รายชื่อเพื่อนจะถูกแสดงที่นี่ -->
+        </ul>
+        <button id="shareButton">แชร์ข้อความ</button>
+    </div>
+
     <script>
         async function main() {
             // เริ่มต้น LIFF
@@ -15,6 +74,25 @@
             if (!liff.isInClient()) {
                 alert("กรุณาเปิดใน LINE App");
                 return;
+            }
+
+            // เช็คว่าเป็นเพื่อนใน LINE หรือไม่
+            const isFriend = await liff.getFriendship();
+
+            if (isFriend.friendFlag) {
+                // แสดงรายชื่อเพื่อนใน LINE
+                const friendList = document.getElementById("friendList");
+
+                try {
+                    const profile = await liff.getProfile();
+                    const friendItem = document.createElement("li");
+                    friendItem.textContent = profile.displayName;
+                    friendList.appendChild(friendItem);
+                } catch (error) {
+                    console.error("ไม่สามารถดึงข้อมูลโปรไฟล์ได้:", error);
+                }
+            } else {
+                alert("คุณยังไม่ได้เป็นเพื่อนกับผู้ใช้นี้");
             }
 
             // ตั้งค่าปุ่มแชร์ข้อความ
