@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LIFF Share Example</title>
+    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+</head>
+<body>
+    <button id="shareButton">แชร์ข้อความ</button>
+    <script>
+        async function main() {
+            // เริ่มต้น LIFF
+            await liff.init({ liffId: "YOUR_LIFF_ID" }); // ใส่ LIFF ID ของคุณ
+
+            // ตรวจสอบว่า LIFF เปิดใน LINE หรือไม่
+            if (!liff.isInClient()) {
+                alert("กรุณาเปิดใน LINE App");
+                return;
+            }
+
+            // ตั้งค่าปุ่มแชร์ข้อความ
+            document.getElementById("shareButton").addEventListener("click", async () => {
+                try {
+                    await liff.shareTargetPicker([
+                        {
+                            type: "text", // ประเภทของข้อความ
+                            text: "สวัสดี! นี่คือข้อความที่แชร์จาก LIFF" // เนื้อหาที่ต้องการแชร์
+                        }
+                    ]);
+                    alert("แชร์ข้อความสำเร็จ!");
+                } catch (error) {
+                    console.error("การแชร์ข้อความล้มเหลว:", error);
+                }
+            });
+        }
+
+        // เรียกใช้ฟังก์ชันหลัก
+        main();
+    </script>
+</body>
+</html>
