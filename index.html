@@ -1,88 +1,90 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF Get Access Token</title>
-    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-        }
-
-        #accessToken {
-            background-color: #f1f1f1;
-            padding: 10px;
-            border-radius: 5px;
-            width: 100%;
-            margin-top: 20px;
-            font-size: 14px;
-            white-space: pre-wrap;
-        }
-
-        #loginButton {
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-
-        #loginButton:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <title>LIFF Token Generator</title>
+    <script src="https://static.line-scdn.net/liff/2.0/sdk.js"></script>
 </head>
 <body>
-    <h1>ดึง Access Token จาก LIFF</h1>
-    <button id="loginButton">ล็อกอินด้วย LINE</button>
-    <pre id="accessToken">Access Token จะแสดงที่นี่หลังจากล็อกอินสำเร็จ</pre>
+    <h1>LIFF Token Generator</h1>
+
+    <label for="auth_key">Auth Key:</label>
+    <input type="text" id="auth_key"><br><br>
+
+    <label for="types">Token Type (android/lite):</label>
+    <input type="text" id="types"><br><br>
+
+    <button onclick="generateToken()">Generate Token</button>
+
+    <h2>Generated Token:</h2>
+    <p id="result"></p>
 
     <script>
-        async function main() {
-            // เริ่มต้น LIFF
-            await liff.init({ liffId: "2006792687-Q6MpoG9X" }); // ใส่ LIFF ID ของคุณ
+        let liffId = "2006792687-Q6MpoG9X"; // ใส่ LIFF ID ของคุณที่ได้จาก LINE Developer Console
 
-            // ตรวจสอบว่า LIFF เปิดใน LINE หรือไม่
-            if (!liff.isInClient()) {
-                // แจ้งให้ผู้ใช้รู้ว่าให้เปิดใน LINE App
-                alert("กรุณาเปิดใน LINE App หรือเว็บไซต์ที่รองรับ");
+        // ฟังก์ชันที่จะเริ่มต้น LIFF
+        function initLiff() {
+            liff.init({ liffId: liffId })
+                .then(() => {
+                    console.log('LIFF initialized');
+                })
+                .catch((error) => {
+                    console.error('LIFF initialization failed', error);
+                });
+        }
+
+        // ฟังก์ชันสำหรับสร้าง token
+        function generateToken() {
+            let authKey = document.getElementById('auth_key').value;
+            let types = document.getElementById('types').value;
+
+            // เช็คว่า authKey หรือ types ไม่ว่าง
+            if (!authKey || !types) {
+                alert("กรุณากรอกข้อมูลทั้งหมด");
+                return;
             }
 
-            // ตรวจสอบสถานะการล็อกอิน
-            if (!liff.isLoggedIn()) {
-                // ถ้ายังไม่ได้ล็อกอิน, ให้กดปุ่มล็อกอิน
-                document.getElementById("loginButton").addEventListener("click", () => {
-                    liff.login(); // เรียกใช้ login
-                });
-            } else {
-                // ถ้าล็อกอินแล้ว, ดึง Access Token
-                const accessToken = liff.getAccessToken();
-                document.getElementById("accessToken").textContent = accessToken ? accessToken : "ไม่สามารถดึง access token ได้";
-                
-                // ส่ง Access Token ไปที่แชทที่เปิด
-                try {
-                    await liff.sendMessages([{
-                        type: "text",
-                        text: "Access Token ของคุณคือ: " + accessToken
-                    }]);
-                    
-                    // คอมเมนต์การปิดหน้าต่าง เพื่อไม่ให้ปิด
-                    // liff.closeWindow();
-                } catch (error) {
-                    console.error("Error sending message:", error);
-                }
+            // สร้าง token (ใช้โค้ดที่คุณมี)
+            let token = createToken(authKey, types);
+
+            // แสดงผลลัพธ์
+            document.getElementById('result').innerText = token;
+        }
+
+        // ฟังก์ชันที่ใช้สร้าง token ตามโค้ดที่คุณให้มา
+        function createToken(authKey, types) {
+            types = types.toLowerCase();
+            let [mid, key] = authKey.split(":");
+            key = atob(key);  // Decode base64 key
+
+            if (types === "android") {
+                let iat = btoa(`iat: ${Math.floor(Date.now() / 1000) * 60}\n`) + ".";
+                let digest = btoa(HMAC_SHA1(key, iat));  // ใช้ HMAC_SHA1 (ต้องเขียนฟังก์ชัน HMAC_SHA1)
+                return `${mid}:${iat}${digest}`;
+            } else if (types === "lite") {
+                // โค้ดสำหรับ lite token
+                // ...
             }
         }
 
-        // เรียกใช้ฟังก์ชันหลัก
-        main();
+        // ฟังก์ชัน HMAC_SHA1 (ตัวอย่าง)
+        function HMAC_SHA1(key, message) {
+            const crypto = window.crypto.subtle;
+            const encoder = new TextEncoder();
+            return crypto.subtle.importKey(
+                "raw", 
+                encoder.encode(key), 
+                { name: "HMAC", hash: { name: "SHA-1" } },
+                false, 
+                ["sign", "verify"]
+            ).then((cryptoKey) => {
+                return crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(message));
+            });
+        }
+
+        // เรียกใช้ฟังก์ชัน initLiff เมื่อโหลดหน้า
+        window.onload = initLiff;
     </script>
 </body>
 </html>
