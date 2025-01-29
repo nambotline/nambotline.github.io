@@ -10,15 +10,15 @@
     <h1>LIFF Token Generator</h1>
 
     <label for="auth_key">Auth Key:</label>
-    <input type="text" id="auth_key"><br><br>
+    <input type="text" id="auth_key" placeholder="Enter auth key"><br><br>
 
     <label for="types">Token Type (android/lite):</label>
-    <input type="text" id="types"><br><br>
+    <input type="text" id="types" placeholder="Enter token type"><br><br>
 
     <button onclick="generateToken()">Generate Token</button>
 
     <h2>Generated Token:</h2>
-    <p id="result"></p>
+    <p id="result">Your generated token will appear here...</p>
 
     <script>
         let liffId = "2006792687-Q6MpoG9X"; // ใส่ LIFF ID ของคุณที่ได้จาก LINE Developer Console
@@ -64,7 +64,13 @@
                 return `${mid}:${iat}${digest}`;
             } else if (types === "lite") {
                 // โค้ดสำหรับ lite token
-                // ...
+                let iat = btoa(`issuedTo: ${mid}\niat: ${Math.floor(Date.now() / 1000) * 60}\n`) + ".";
+                let iat2 = btoa("type: YWT\nalg: HMAC_SHA1\n");
+                let sessiondata = iat + iat2;
+                let signature = btoa(HMAC_SHA1(key, sessiondata));
+                return `${mid}:${sessiondata}.${signature}`;
+            } else {
+                return "Invalid type.";
             }
         }
 
@@ -80,6 +86,11 @@
                 ["sign", "verify"]
             ).then((cryptoKey) => {
                 return crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(message));
+            }).then((signature) => {
+                // Convert the signature to Base64
+                let binary = new Uint8Array(signature);
+                let base64String = btoa(String.fromCharCode.apply(null, binary));
+                return base64String;
             });
         }
 
